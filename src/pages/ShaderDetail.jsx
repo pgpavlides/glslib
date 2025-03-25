@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useStore } from '../store';
 import * as THREE from 'three';
+import { downloadShader } from '../utils/shaderExport';
+import ExportModal from '../components/ShaderExport/ExportModal';
 
 const ShaderDetail = () => {
   const { id } = useParams();
@@ -18,17 +20,25 @@ const ShaderDetail = () => {
   const [showCode, setShowCode] = useState(false);
   const [activeTab, setActiveTab] = useState('fragment');
   const [copySuccess, setCopySuccess] = useState('');
+  const [exportSuccess, setExportSuccess] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
 
   // Expose toggle functions globally for the sidebar
   useEffect(() => {
     window.toggleShaderInfo = () => setShowInfo(!showInfo);
     window.toggleShaderCode = () => setShowCode(!showCode);
+    window.exportShader = () => {
+      if (fragmentShader && vertexShader && shader) {
+        setShowExportModal(true);
+      }
+    };
     
     return () => {
       delete window.toggleShaderInfo;
       delete window.toggleShaderCode;
+      delete window.exportShader;
     };
-  }, [showInfo, showCode]);
+  }, [showInfo, showCode, fragmentShader, vertexShader, shader]);
 
   // Load shader files
   useEffect(() => {
@@ -286,6 +296,38 @@ const ShaderDetail = () => {
           </svg>
         </button>
       </div>
+
+      {/* Export Success Message */}
+      {exportSuccess && (
+        <div className="fixed top-6 right-6 z-50 bg-green-600 text-white py-2 px-4 rounded-md shadow-lg flex items-center">
+          <svg 
+            xmlns="http://www.w3.org/2000/svg" 
+            className="h-5 w-5 mr-2" 
+            viewBox="0 0 20 20" 
+            fill="currentColor"
+          >
+            <path 
+              fillRule="evenodd" 
+              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" 
+              clipRule="evenodd" 
+            />
+          </svg>
+          Shader code exported successfully
+        </div>
+      )}
+
+      {/* Export Modal */}
+      <ExportModal 
+        isOpen={showExportModal}
+        onClose={() => setShowExportModal(false)}
+        fragmentShader={fragmentShader}
+        vertexShader={vertexShader}
+        shaderName={shader?.name || 'Shader'}
+        onExportSuccess={() => {
+          setExportSuccess(true);
+          setTimeout(() => setExportSuccess(false), 3000);
+        }}
+      />
     </div>
   );
 };
