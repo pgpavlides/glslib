@@ -38,6 +38,11 @@ export const useStore = create((set, get) => ({
       name: 'Fractal Shapes',
       description: 'Smooth gradient waves for UI backgrounds',
       tags: ['background', 'dark', 'gradients', 'waves']
+    },
+    lavaLamp: {
+      name: 'Lava Lamp',
+      description: 'A mesmerizing lava lamp effect with blobs that merge and separate',
+      tags: ['fluid', 'animation', 'raymarching', 'colorful']
     }
   },
   
