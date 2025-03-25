@@ -34,26 +34,6 @@ export const useStore = create((set, get) => ({
   
   // Manual defined metadata for specific shaders (optional overrides)
   shaderMetadata: {
-    ripple: {
-      name: 'Ripple Effect',
-      description: 'A hypnotic ripple effect using sine waves',
-      tags: ['waves', 'animation', 'blue']
-    },
-    noise: {
-      name: 'Noise Generator',
-      description: 'Procedural noise pattern with animated movement',
-      tags: ['noise', 'procedural', 'animation']
-    },
-    gradient: {
-      name: 'Animated Gradient',
-      description: 'Smooth gradient transition with time-based animation',
-      tags: ['gradient', 'animation', 'colors']
-    },
-    darkWater: {
-      name: 'Dark Water',
-      description: 'Deep water turbulence effect with subtle movement',
-      tags: ['water', 'dark', 'turbulence', 'animation']
-    },
     homeBackground: {
       name: 'Fractal Shapes',
       description: 'Smooth gradient waves for UI backgrounds',

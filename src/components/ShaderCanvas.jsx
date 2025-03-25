@@ -1,12 +1,12 @@
 import React, { useRef, useEffect } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls } from '@react-three/drei';
+import { OrbitControls, OrthographicCamera } from '@react-three/drei';
 import * as THREE from 'three';
 
 const ShaderPlane = ({ fragmentShader, vertexShader, isFullscreen }) => {
   const meshRef = useRef();
   const materialRef = useRef();
-  const { viewport, size } = useThree();
+  const { size } = useThree();
 
   // Set up uniforms
   const uniforms = useRef({
@@ -24,22 +24,32 @@ const ShaderPlane = ({ fragmentShader, vertexShader, isFullscreen }) => {
   // Set up resolution when component mounts or viewport/size changes
   useEffect(() => {
     if (materialRef.current) {
-      materialRef.current.uniforms.uResolution.value.set(size.width, size.height);
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      materialRef.current.uniforms.uResolution.value.set(width, height);
+      
+      // Add resize handler
+      const handleResize = () => {
+        materialRef.current.uniforms.uResolution.value.set(
+          window.innerWidth,
+          window.innerHeight
+        );
+      };
+      
+      window.addEventListener('resize', handleResize);
+      return () => window.removeEventListener('resize', handleResize);
     }
-  }, [viewport, size]);
+  }, []);
 
   return (
-    <mesh 
-      ref={meshRef} 
-      position={[0, 0, 0]} 
-      rotation={isFullscreen ? [0, 0, 0] : [-Math.PI / 2, 0, 0]}
-    >
-      <planeGeometry args={[2, 2, 32, 32]} />
+    <mesh ref={meshRef} position={[0, 0, 0]}>
+      <planeGeometry args={[2, 2]} />
       <shaderMaterial
         ref={materialRef}
         fragmentShader={fragmentShader}
         vertexShader={vertexShader}
         uniforms={uniforms.current}
+        transparent={true}
       />
     </mesh>
   );
@@ -51,45 +61,24 @@ const ShaderCanvas = ({
   isFullscreen = false, 
   disableControls = false 
 }) => {
-  // Auto-resize handler for fullscreen mode
-  const FullscreenHandler = () => {
-    const { camera, viewport } = useThree();
-    
-    useEffect(() => {
-      if (isFullscreen) {
-        // Make sure aspect ratio is square for the shader content
-        const aspect = viewport.width / viewport.height;
-        
-        if (aspect > 1) {
-          // Landscape
-          camera.position.z = 1.5;
-        } else {
-          // Portrait
-          camera.position.z = 2;
-        }
-        
-        camera.updateProjectionMatrix();
-      }
-    }, [camera, viewport]);
-    
-    return null;
-  };
-
   return (
     <div className={isFullscreen ? "w-full h-full" : "w-full h-[500px]"}>
-      <Canvas 
-        camera={{ 
-          position: [0, 0, 1.5], 
-          fov: 50,
-          near: 0.1,
-          far: 1000
-        }}
-        gl={{ antialias: true, alpha: false }}
-        linear={true}
-        dpr={[1, 2]} // Improved performance on high-DPI screens
+      <Canvas
+        gl={{ antialias: true, alpha: true }}
+        dpr={[1, 2]}
       >
-        {isFullscreen && <FullscreenHandler />}
-        <color attach="background" args={['#121212']} />
+        {/* Use OrthographicCamera from drei for easier setup */}
+        <OrthographicCamera
+          makeDefault
+          position={[0, 0, 1]}
+          zoom={1}
+          left={-1}
+          right={1}
+          top={1}
+          bottom={-1}
+          near={0.1}
+          far={10}
+        />
         <ShaderPlane
           fragmentShader={fragmentShader}
           vertexShader={vertexShader}

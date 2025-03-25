@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useStore } from '../store';
-import ShaderCanvas from '../components/ShaderCanvas';
+import * as THREE from 'three';
 
 const ShaderDetail = () => {
   const { id } = useParams();
@@ -56,6 +56,82 @@ const ShaderDetail = () => {
     loadShaders();
   }, [id, shader]);
 
+  const mountRef = useRef(null);
+  
+  // Set up and run Three.js when fragment and vertex shaders are loaded
+  useEffect(() => {
+    if (!mountRef.current || !fragmentShader || !vertexShader || isLoading) {
+      return;
+    }
+    
+    // Scene setup
+    const scene = new THREE.Scene();
+    
+    // Camera setup - use orthographic camera for full-screen shader
+    const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 10);
+    camera.position.z = 1;
+    
+    // Renderer setup
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    
+    // Append to DOM
+    mountRef.current.innerHTML = '';
+    mountRef.current.appendChild(renderer.domElement);
+    
+    // Create uniforms for the shader
+    const uniforms = {
+      uTime: { value: 0 },
+      uResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) }
+    };
+    
+    // Create shader material
+    const shaderMaterial = new THREE.ShaderMaterial({
+      uniforms: uniforms,
+      vertexShader: vertexShader,
+      fragmentShader: fragmentShader,
+      transparent: true
+    });
+    
+    // Create a plane that fills the screen
+    const geometry = new THREE.PlaneGeometry(2, 2);
+    const mesh = new THREE.Mesh(geometry, shaderMaterial);
+    scene.add(mesh);
+    
+    // Handle window resize
+    const handleResize = () => {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      
+      renderer.setSize(width, height);
+      uniforms.uResolution.value.set(width, height);
+    };
+    window.addEventListener('resize', handleResize);
+    
+    // Animation loop
+    let animationId;
+    const animate = () => {
+      uniforms.uTime.value += 0.01;
+      renderer.render(scene, camera);
+      animationId = requestAnimationFrame(animate);
+    };
+    animate();
+    
+    // Cleanup function
+    return () => {
+      cancelAnimationFrame(animationId);
+      window.removeEventListener('resize', handleResize);
+      scene.remove(mesh);
+      geometry.dispose();
+      shaderMaterial.dispose();
+      renderer.dispose();
+      if (mountRef.current) {
+        mountRef.current.innerHTML = '';
+      }
+    };
+  }, [fragmentShader, vertexShader, isLoading]);
+
   // Copy to clipboard function
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text)
@@ -87,19 +163,16 @@ const ShaderDetail = () => {
 
   return (
     <div className="fixed inset-0 overflow-hidden bg-black">
-      {/* Fullscreen shader */}
-      <div className="absolute inset-0">
-        {isLoading ? (
+      {/* Fullscreen shader - extends beyond the layout's padding */}
+      <div 
+        ref={mountRef}
+        className="absolute inset-0" // Negative margin to compensate for sidebar padding
+        style={{ width: 'calc(100% + 72px)' }} // Increase width to account for sidebar
+      >
+        {isLoading && (
           <div className="flex items-center justify-center h-full">
             <div className="text-white text-2xl">Loading shader...</div>
           </div>
-        ) : (
-          <ShaderCanvas
-            fragmentShader={fragmentShader}
-            vertexShader={vertexShader}
-            isFullscreen={true}
-            disableControls={true}
-          />
         )}
       </div>
       
