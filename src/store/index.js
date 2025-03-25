@@ -1,10 +1,10 @@
-import { create } from 'zustand';
+import { create } from "zustand";
 
 // Function to capitalize first letter and add spaces between camelCase
 const formatShaderName = (id) => {
   // Add space before capital letters and capitalize first letter
   return id
-    .replace(/([A-Z])/g, ' $1') // Add space before capital letters
+    .replace(/([A-Z])/g, " $1") // Add space before capital letters
     .replace(/^./, (str) => str.toUpperCase()) // Capitalize first letter
     .trim(); // Remove any extra spaces
 };
@@ -14,8 +14,10 @@ const createDefaultMetadata = (id) => {
   return {
     id,
     name: formatShaderName(id),
-    description: `A shader effect using ${formatShaderName(id).toLowerCase()} technique`,
-    tags: ['effect']
+    description: `A shader effect using ${formatShaderName(
+      id
+    ).toLowerCase()} technique`,
+    tags: ["effect"],
   };
 };
 
@@ -23,87 +25,87 @@ const createDefaultMetadata = (id) => {
 export const useStore = create((set, get) => ({
   // Shader collection - will be populated dynamically
   shaders: [],
-  
+
   // Currently active shader
   activeShader: null,
-  
+
   // Set active shader
-  setActiveShader: (shaderId) => set({ 
-    activeShader: shaderId 
-  }),
-  
+  setActiveShader: (shaderId) =>
+    set({
+      activeShader: shaderId,
+    }),
+
   // Manual defined metadata for specific shaders (optional overrides)
   shaderMetadata: {
     homeBackground: {
-      name: 'Fractal Shapes',
-      description: 'Smooth gradient waves for UI backgrounds',
-      tags: ['background', 'dark', 'gradients', 'waves']
+      name: "Fractal Shapes",
+      description: "Smooth gradient waves for UI backgrounds",
+      tags: ["background", "dark", "gradients", "waves"],
     },
-    lavaLamp: {
-      name: 'Lava Lamp',
-      description: 'A mesmerizing lava lamp effect with blobs that merge and separate',
-      tags: ['fluid', 'animation', 'raymarching', 'colorful']
-    }
   },
-  
+
   // Initialize shaders by scanning the shaders directory
   initializeShaders: async () => {
     try {
       // This uses Vite's import.meta.glob to scan for shader directories
-      const shaderModules = import.meta.glob('../shaders/*/fragment.glsl');
-      const shaderIds = Object.keys(shaderModules).map(path => {
-        // Extract shader ID from path (e.g., '../shaders/ripple/fragment.glsl' -> 'ripple')
-        const match = path.match(/\.\.\/shaders\/(.+)\/fragment\.glsl/);
-        return match ? match[1] : null;
-      }).filter(Boolean);
-      
+      const shaderModules = import.meta.glob("../shaders/*/fragment.glsl");
+      const shaderIds = Object.keys(shaderModules)
+        .map((path) => {
+          // Extract shader ID from path (e.g., '../shaders/ripple/fragment.glsl' -> 'ripple')
+          const match = path.match(/\.\.\/shaders\/(.+)\/fragment\.glsl/);
+          return match ? match[1] : null;
+        })
+        .filter(Boolean);
+
       // Create shader metadata
-      const shaders = shaderIds.map(id => {
+      const shaders = shaderIds.map((id) => {
         const metadata = get().shaderMetadata[id] || {};
         return {
           id,
           name: metadata.name || formatShaderName(id),
-          description: metadata.description || createDefaultMetadata(id).description,
-          tags: metadata.tags || createDefaultMetadata(id).tags
+          description:
+            metadata.description || createDefaultMetadata(id).description,
+          tags: metadata.tags || createDefaultMetadata(id).tags,
         };
       });
-      
+
       // Update state with found shaders
       set({ shaders });
-      
+
       return shaders;
     } catch (error) {
-      console.error('Error initializing shaders:', error);
+      console.error("Error initializing shaders:", error);
       return [];
     }
   },
-  
+
   // Get shader by ID
   getShaderById: (id) => {
     const { shaders, shaderMetadata } = get();
-    
+
     // Try to find in already loaded shaders
-    const existingShader = shaders.find(shader => shader.id === id);
+    const existingShader = shaders.find((shader) => shader.id === id);
     if (existingShader) return existingShader;
-    
+
     // If not found but we have metadata, create a new shader object
     if (shaderMetadata[id]) {
       const metadata = shaderMetadata[id];
       return {
         id,
         name: metadata.name || formatShaderName(id),
-        description: metadata.description || createDefaultMetadata(id).description,
-        tags: metadata.tags || createDefaultMetadata(id).tags
+        description:
+          metadata.description || createDefaultMetadata(id).description,
+        tags: metadata.tags || createDefaultMetadata(id).tags,
       };
     }
-    
+
     // If not found and no metadata, create default metadata
     return createDefaultMetadata(id);
   },
-  
+
   // Filter shaders by tag
   filterShadersByTag: (tag) => {
     const { shaders } = get();
-    return shaders.filter(shader => shader.tags.includes(tag));
-  }
+    return shaders.filter((shader) => shader.tags.includes(tag));
+  },
 }));

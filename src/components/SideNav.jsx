@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { FaHome, FaImages, FaCode, FaInfoCircle, FaDownload } from "react-icons/fa";
+import { FaHome, FaImages, FaCode, FaInfoCircle, FaDownload, FaBookOpen } from "react-icons/fa";
 import { useStore } from "../store";
 
 const SideNav = () => {
@@ -99,6 +99,20 @@ const SideNav = () => {
             tooltip="Info"
           >
             <FaInfoCircle />
+          </NavItem>
+
+          <NavItem
+            selected={false}
+            id={-1}
+            onClick={() => {
+              // Use the exposed explanation toggle function from ShaderDetail
+              if (window.toggleShaderExplanation) {
+                window.toggleShaderExplanation();
+              }
+            }}
+            tooltip="Explanation"
+          >
+            <FaBookOpen />
           </NavItem>
 
           <NavItem

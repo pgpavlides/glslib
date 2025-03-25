@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useStore } from '../store';
 import * as THREE from 'three';
-import { downloadShader } from '../utils/shaderExport';
+// import { downloadShader } from '../utils/shaderExport';
 import ExportModal from '../components/ShaderExport/ExportModal';
 
 const ShaderDetail = () => {
@@ -14,10 +14,12 @@ const ShaderDetail = () => {
   const [fragmentShader, setFragmentShader] = useState('');
   const [vertexShader, setVertexShader] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [ShaderExplanation, setShaderExplanation] = useState(null);
   
   // UI state
   const [showInfo, setShowInfo] = useState(false);
   const [showCode, setShowCode] = useState(false);
+  const [showExplanation, setShowExplanation] = useState(false);
   const [activeTab, setActiveTab] = useState('fragment');
   const [copySuccess, setCopySuccess] = useState('');
   const [exportSuccess, setExportSuccess] = useState(false);
@@ -27,6 +29,7 @@ const ShaderDetail = () => {
   useEffect(() => {
     window.toggleShaderInfo = () => setShowInfo(!showInfo);
     window.toggleShaderCode = () => setShowCode(!showCode);
+    window.toggleShaderExplanation = () => setShowExplanation(!showExplanation);
     window.exportShader = () => {
       if (fragmentShader && vertexShader && shader) {
         setShowExportModal(true);
@@ -36,11 +39,12 @@ const ShaderDetail = () => {
     return () => {
       delete window.toggleShaderInfo;
       delete window.toggleShaderCode;
+      delete window.toggleShaderExplanation;
       delete window.exportShader;
     };
-  }, [showInfo, showCode, fragmentShader, vertexShader, shader]);
+  }, [showInfo, showCode, showExplanation, fragmentShader, vertexShader, shader]);
 
-  // Load shader files
+  // Load shader files and explanation component
   useEffect(() => {
     const loadShaders = async () => {
       if (shader) {
@@ -54,6 +58,15 @@ const ShaderDetail = () => {
           // Load vertex shader
           const vertModule = await import(`../shaders/${id}/vertex.glsl`);
           setVertexShader(vertModule.default);
+          
+          // Dynamically load the explanation component if it exists
+          try {
+            const explanation = lazy(() => import(/* @vite-ignore */ `../shaders/${id}/explanation`));
+            setShaderExplanation(() => explanation);
+          } catch (error) {
+            console.log(`No explanation found for shader: ${id}`, error);
+            setShaderExplanation(null);
+          }
           
           setIsLoading(false);
         } catch (error) {
@@ -296,6 +309,28 @@ const ShaderDetail = () => {
           </svg>
         </button>
       </div>
+
+      {/* Explanation panel */}
+      {showExplanation && (
+        <div className="fixed inset-0 z-20 overflow-auto bg-black bg-opacity-90">
+          <div className="relative pb-16">
+            <button 
+              onClick={() => setShowExplanation(false)}
+              className="fixed top-4 right-4 z-30 bg-gray-800 p-2 rounded-full text-gray-400 hover:text-white transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            
+            <ShaderExplanation 
+              shaderId={id}
+              fragmentShader={fragmentShader}
+              vertexShader={vertexShader}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Export Success Message */}
       {exportSuccess && (
