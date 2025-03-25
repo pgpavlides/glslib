@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import Library from './pages/Library';
 import ShaderDetail from './pages/ShaderDetail';
+import { useStore } from './store';
 
 // Layout component that conditionally renders the Navbar
 const Layout = ({ children }) => {
@@ -22,6 +23,13 @@ const Layout = ({ children }) => {
 
 // App component with routes
 const AppRoutes = () => {
+  const { initializeShaders } = useStore();
+  
+  // Initialize shaders when component mounts
+  useEffect(() => {
+    initializeShaders();
+  }, [initializeShaders]);
+  
   return (
     <Routes>
       <Route path="/" element={
