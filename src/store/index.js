@@ -48,6 +48,16 @@ export const useStore = create((set, get) => ({
       name: 'Animated Gradient',
       description: 'Smooth gradient transition with time-based animation',
       tags: ['gradient', 'animation', 'colors']
+    },
+    darkWater: {
+      name: 'Dark Water',
+      description: 'Deep water turbulence effect with subtle movement',
+      tags: ['water', 'dark', 'turbulence', 'animation']
+    },
+    homeBackground: {
+      name: 'Fractal Shapes',
+      description: 'Smooth gradient waves for UI backgrounds',
+      tags: ['background', 'dark', 'gradients', 'waves']
     }
   },
   

@@ -19,6 +19,17 @@ const ShaderDetail = () => {
   const [activeTab, setActiveTab] = useState('fragment');
   const [copySuccess, setCopySuccess] = useState('');
 
+  // Expose toggle functions globally for the sidebar
+  useEffect(() => {
+    window.toggleShaderInfo = () => setShowInfo(!showInfo);
+    window.toggleShaderCode = () => setShowCode(!showCode);
+    
+    return () => {
+      delete window.toggleShaderInfo;
+      delete window.toggleShaderCode;
+    };
+  }, [showInfo, showCode]);
+
   // Load shader files
   useEffect(() => {
     const loadShaders = async () => {
@@ -93,26 +104,7 @@ const ShaderDetail = () => {
       </div>
       
       {/* Back button */}
-      <div className="absolute top-6 left-6 z-10">
-        <button
-          onClick={() => navigate('/library')}
-          className="flex items-center text-white bg-black bg-opacity-50 hover:bg-opacity-70 px-4 py-2 rounded-full transition-all"
-        >
-          <svg 
-            xmlns="http://www.w3.org/2000/svg" 
-            className="h-5 w-5 mr-2" 
-            viewBox="0 0 20 20" 
-            fill="currentColor"
-          >
-            <path 
-              fillRule="evenodd" 
-              d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" 
-              clipRule="evenodd" 
-            />
-          </svg>
-          Back
-        </button>
-      </div>
+      {/* Removed back button since we now have the sidebar navigation */}
       
       {/* Info panel */}
       {showInfo && (
@@ -179,8 +171,8 @@ const ShaderDetail = () => {
         </div>
       )}
       
-      {/* Control buttons */}
-      <div className="absolute bottom-6 left-6 z-10 flex gap-2">
+      {/* Control buttons - moved to the sidebar, but keeping as backup */}
+      <div className="absolute bottom-6 left-6 z-10 flex gap-2 opacity-0">
         {/* Info toggle button */}
         <button
           onClick={() => setShowInfo(!showInfo)}

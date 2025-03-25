@@ -1,20 +1,17 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import Navbar from './components/Navbar';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import SideNav from './components/SideNav';
 import Home from './pages/Home';
 import Library from './pages/Library';
 import ShaderDetail from './pages/ShaderDetail';
 import { useStore } from './store';
 
-// Layout component that conditionally renders the Navbar
+// Layout component that includes the SideNav
 const Layout = ({ children }) => {
-  const location = useLocation();
-  const isShaderPage = location.pathname.startsWith('/shader/');
-  
   return (
     <div className="min-h-screen bg-gray-900 text-white">
-      {!isShaderPage && <Navbar />}
-      <main className={isShaderPage ? "" : "pt-4"}>
+      <SideNav />
+      <main className="pl-[72px]"> {/* Add padding to account for sidebar width */}
         {children}
       </main>
     </div>

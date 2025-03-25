@@ -84,6 +84,9 @@ const ShaderCanvas = ({
           near: 0.1,
           far: 1000
         }}
+        gl={{ antialias: true, alpha: false }}
+        linear={true}
+        dpr={[1, 2]} // Improved performance on high-DPI screens
       >
         {isFullscreen && <FullscreenHandler />}
         <color attach="background" args={['#121212']} />
